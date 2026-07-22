@@ -173,3 +173,58 @@ grupo, porque la helada nos afecta a todos.
 
 Autenticación multiusuario, pagos, control de riego, aplicaciones nativas,
 soporte de cultivos fuera de los tres definidos en el MVP.
+
+---
+
+## Decisiones de diseño
+
+Las siguientes resoluciones aclaran ambigüedades detectadas durante el
+diseño y son vinculantes para la implementación.
+
+1. **Conflicto de sync:** last-write-wins por `updatedAt`. Sin multiusuario
+   no hay conflictos reales; upsert con condition expression resuelve
+   duplicate-id por retry.
+
+2. **Cultivos del MVP:** soja, maíz, poroto (los tres principales del NOA).
+
+3. **Etapa fenológica:** selección manual de una lista cerrada al dar de alta
+   la parcela (siembra, emergencia, vegetativo, floración, llenado, madurez).
+   Editable después desde el detalle de la parcela.
+
+4. **Replicación a IndexedDB:** pull al recuperar conexión. El cliente envía
+   la cola de operaciones pendientes y luego hace GET para datos frescos
+   (clima, alertas).
+
+5. **Ingesta programada:** solo para parcelas con suscripción push activa.
+   No se consume Open-Meteo para parcelas sin dispositivo suscripto.
+
+6. **Identidad:** `deviceId` UUID v4 generado al primer arranque, persistido
+   en IndexedDB store `config`. Es la partition key en DynamoDB.
+
+7. **Deduplicación:** ventana de 12 h desde la última alerta *entregada*
+   (mostrada al usuario o enviada como push), no desde la generada. Esto
+   evita suprimir alertas que el usuario nunca vio.
+
+8. **Prompt API:** best-effort con feature detection (`window.ai`). Contexto
+   acotado a pronóstico de 3 días + cultivo + etapa fenológica. Si no está
+   disponible o la respuesta no valida el schema, fallback inmediato al motor
+   de reglas.
+
+9. **Network Information API:** si no existe en el navegador (Safari), asumir
+   conexión buena y dejar que el timeout del fetch decida el fallback.
+
+10. **Compartir (REQ-7):** el texto compartido incluye cultivo, localidad
+    (nombre de la parcela), alerta y acción recomendada. Nunca coordenadas
+    exactas (lat/lon).
+
+11. **Triage local offline (REQ-5 AC3):** análisis de histograma de color
+    sobre canvas. Se dibuja la imagen capturada en un `<canvas>`, se recorre
+    `getImageData` y se calcula la proporción de píxeles en rango
+    amarillo/marrón contra verde (umbrales HSL configurables). Devuelve una
+    severidad preliminar (1-3) y encola la imagen para diagnóstico completo
+    con Bedrock al recuperar señal. Esto reemplaza la opción de "solo encolar"
+    porque no cumplía REQ-5 AC3 que exige realizar un triage local.
+
+12. **Plataforma target:** Chromium sobre Android. iOS es best-effort sin
+    garantía de Background Sync; la app sincroniza al reabrir vía
+    `visibilitychange`.
