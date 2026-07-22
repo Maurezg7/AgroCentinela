@@ -1,0 +1,13 @@
+{
+  "name": "agrocentinela",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/shared",
+    "packages/frontend",
+    "packages/backend"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
