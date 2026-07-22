@@ -23,6 +23,19 @@ export const SyncDiagnosisUploadSchema = SyncBaseSchema.extend({
 });
 
 /**
+ * Transporta al backend la marca de entrega que el frontend escribe al
+ * renderizar una alerta. El backend solo escribe deliveredAt si el valor
+ * actual es null (primera entrega gana).
+ */
+export const SyncAlertDeliveredSchema = SyncBaseSchema.extend({
+  type: z.literal('alert-delivered'),
+  payload: z.object({
+    alertId: z.string().uuid(),
+    deliveredAt: z.string().datetime(),
+  }),
+});
+
+/**
  * La cola de sync vive exclusivamente en IndexedDB. No existe entidad
  * SyncQueue en DynamoDB. La idempotencia se garantiza por el upsert
  * condicionado en el backend.
@@ -30,8 +43,10 @@ export const SyncDiagnosisUploadSchema = SyncBaseSchema.extend({
 export const SyncOperationSchema = z.discriminatedUnion('type', [
   SyncCreateParcelSchema,
   SyncDiagnosisUploadSchema,
+  SyncAlertDeliveredSchema,
 ]);
 
 export type SyncOperation = z.infer<typeof SyncOperationSchema>;
 export type SyncCreateParcel = z.infer<typeof SyncCreateParcelSchema>;
 export type SyncDiagnosisUpload = z.infer<typeof SyncDiagnosisUploadSchema>;
+export type SyncAlertDelivered = z.infer<typeof SyncAlertDeliveredSchema>;

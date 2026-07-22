@@ -277,7 +277,6 @@ export const DailyForecastSchema = z.object({
   temperatureMin: z.number(),
   precipitationSum: z.number().min(0),
   et0: z.number().min(0),
-  hourly: z.array(HourlyForecastSchema),
 });
 
 export const ClimateCacheSchema = z.object({
@@ -285,15 +284,19 @@ export const ClimateCacheSchema = z.object({
   fetchedAt: z.string().datetime(),
   expiresAt: z.string().datetime(),
   days: z.array(DailyForecastSchema).min(1).max(7),
-  hourly48h: z.array(HourlyForecastSchema).max(48),
+  hourly48h: z.array(HourlyForecastSchema).min(1).max(48),
 });
 
 export type ClimateCache = z.infer<typeof ClimateCacheSchema>;
 ```
 
-> Modelo unificado: un solo ítem por parcela con SK = `CLIMATE#LATEST`,
-> sobrescrito en cada ingesta. `hourly48h` contiene las primeras 48 horas
-> de datos horarios aplanados para consumo del motor de reglas y Prompt API.
+> El detalle horario existe únicamente en `hourly48h` (primeras 48h aplanadas).
+> Los días 3-7 quedan solo con agregados diarios.
+>
+> Mapeo desde Open-Meteo:
+> - `days[]`: construido desde `daily.time`, `daily.temperature_2m_max/min`,
+>   `daily.precipitation_sum`, `daily.et0_fao_evapotranspiration` (7 entradas).
+> - `hourly48h[]`: recorte de `hourly.*` a índices 0..47 (primeras 48 horas).
 
 ```typescript
 // alert.schema.ts
@@ -421,9 +424,18 @@ export const SyncDiagnosisUploadSchema = SyncBaseSchema.extend({
   }),
 });
 
+export const SyncAlertDeliveredSchema = SyncBaseSchema.extend({
+  type: z.literal('alert-delivered'),
+  payload: z.object({
+    alertId: z.string().uuid(),
+    deliveredAt: z.string().datetime(),
+  }),
+});
+
 export const SyncOperationSchema = z.discriminatedUnion('type', [
   SyncCreateParcelSchema,
   SyncDiagnosisUploadSchema,
+  SyncAlertDeliveredSchema,
 ]);
 
 export type SyncOperation = z.infer<typeof SyncOperationSchema>;
@@ -433,6 +445,11 @@ export type SyncOperation = z.infer<typeof SyncOperationSchema>;
 > SyncQueue en DynamoDB. La idempotencia se garantiza por el upsert
 > condicionado en el backend (PutItem con `attribute_not_exists(PK)`
 > o condition en `updatedAt`).
+>
+> La variante `alert-delivered` transporta al backend la marca de entrega
+> que el frontend escribe al renderizar una alerta. El backend, al
+> recibirla, solo escribe `deliveredAt` si el valor actual es `null`
+> (primera entrega gana — `SET deliveredAt = :val IF attribute_not_exists(deliveredAt) OR deliveredAt = :null`).
 
 ### IndexedDB Stores
 
@@ -484,7 +501,13 @@ se mide desde la entrega, no la generación.
   que `webpush.sendNotification()` resolvió sin error (status 201).
 - **Renderizado en app:** el frontend escribe `deliveredAt = now()` en
   IndexedDB cuando la alerta se muestra en pantalla (intersection observer
-  o mount del componente de alerta). En la próxima sync se envía al backend.
+  o mount del componente de alerta). Se encola como `alert-delivered` en
+  la sync queue y se envía al backend en la próxima sync.
+
+El backend aplica semántica de **primera entrega gana**: solo escribe
+`deliveredAt` si el valor actual es `null` (condition expression en DynamoDB).
+Esto garantiza que el timestamp más temprano prevalezca sin importar el
+orden de llegada de push vs. sync del frontend.
 
 ### Property 5: Idempotencia de sync
 

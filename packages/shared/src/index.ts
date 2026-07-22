@@ -60,10 +60,12 @@ export type { PushSubscriptionData } from './schemas/push-subscription.schema';
 export {
   SyncCreateParcelSchema,
   SyncDiagnosisUploadSchema,
+  SyncAlertDeliveredSchema,
   SyncOperationSchema,
 } from './schemas/sync-operation.schema';
 export type {
   SyncOperation,
   SyncCreateParcel,
   SyncDiagnosisUpload,
+  SyncAlertDelivered,
 } from './schemas/sync-operation.schema';
