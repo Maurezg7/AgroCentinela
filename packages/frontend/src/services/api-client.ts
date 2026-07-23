@@ -1,7 +1,12 @@
-import type { Parcel, ParcelCreate, ClimateCache } from '@agrocentinela/shared';
+import type { Parcel, ParcelCreate, ClimateCache, Alert } from '@agrocentinela/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 const TIMEOUT_MS = 10_000;
+
+export type GenerateAlertResult =
+  | { generated: true; alert: Alert }
+  | { generated: false; reason: 'no_risk' }
+  | { generated: false; reason: 'deduplicated'; alertId: string };
 
 class ApiError extends Error {
   constructor(
@@ -51,5 +56,20 @@ export const apiClient = {
 
   getClimate(parcelId: string): Promise<ClimateCache> {
     return request<ClimateCache>(`/climate/${parcelId}`);
+  },
+
+  getAlertsByDevice(deviceId: string): Promise<Alert[]> {
+    return request<Alert[]>(`/alerts?deviceId=${deviceId}`);
+  },
+
+  getAlertsByParcel(parcelId: string): Promise<Alert[]> {
+    return request<Alert[]>(`/alerts?parcelId=${parcelId}`);
+  },
+
+  generateAlert(parcelId: string, deviceId: string): Promise<GenerateAlertResult> {
+    return request<GenerateAlertResult>('/alerts/generate', {
+      method: 'POST',
+      body: JSON.stringify({ parcelId, deviceId }),
+    });
   },
 };

@@ -1,6 +1,8 @@
 import {
   Controller,
   Post,
+  Get,
+  Query,
   Body,
   BadRequestException,
   NotFoundException,
@@ -23,6 +25,20 @@ const GenerateAlertSchema = z.object({
 @Controller('alerts')
 export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
+
+  @Get()
+  async list(
+    @Query('deviceId') deviceId?: string,
+    @Query('parcelId') parcelId?: string,
+  ) {
+    if (deviceId) {
+      return this.alertsService.findByDevice(deviceId);
+    }
+    if (parcelId) {
+      return this.alertsService.findByParcel(parcelId);
+    }
+    throw new BadRequestException('deviceId or parcelId query param required');
+  }
 
   @Post('generate')
   async generate(@Body() body: unknown) {

@@ -32,6 +32,39 @@ export class AlertsService {
     private readonly parcelsService: ParcelsService,
   ) {}
 
+  /** AP4: Alerts for a device, ordered by date desc (GSI1) */
+  async findByDevice(deviceId: string): Promise<Alert[]> {
+    const res = await this.dynamo.send(
+      new QueryCommand({
+        TableName: this.tableName,
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :pk AND begins_with(GSI1SK, :prefix)',
+        ExpressionAttributeValues: {
+          ':pk': `DEVICE#${deviceId}`,
+          ':prefix': 'ALERT#',
+        },
+        ScanIndexForward: false,
+      }),
+    );
+    return (res.Items ?? []) as Alert[];
+  }
+
+  /** AP3: Alerts for a parcel, ordered by date desc */
+  async findByParcel(parcelId: string): Promise<Alert[]> {
+    const res = await this.dynamo.send(
+      new QueryCommand({
+        TableName: this.tableName,
+        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :prefix)',
+        ExpressionAttributeValues: {
+          ':pk': `PARCEL#${parcelId}`,
+          ':prefix': 'ALERT#',
+        },
+        ScanIndexForward: false,
+      }),
+    );
+    return (res.Items ?? []) as Alert[];
+  }
+
   async generate(
     parcelId: string,
     deviceId: string,
