@@ -1,4 +1,4 @@
-import type { Parcel, ParcelCreate } from '@agrocentinela/shared';
+import type { Parcel, ParcelCreate, ClimateCache } from '@agrocentinela/shared';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 const TIMEOUT_MS = 10_000;
@@ -47,5 +47,9 @@ export const apiClient = {
 
   getParcelsByDevice(deviceId: string): Promise<Parcel[]> {
     return request<Parcel[]>(`/parcels?deviceId=${deviceId}`);
+  },
+
+  getClimate(parcelId: string): Promise<ClimateCache> {
+    return request<ClimateCache>(`/climate/${parcelId}`);
   },
 };

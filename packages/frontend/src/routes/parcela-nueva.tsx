@@ -4,14 +4,10 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { createParcel } from "@/services/parcels.service";
+import { CROP_LABELS, STAGE_LABELS } from "@/lib/labels";
 
 const CROPS = ['soja', 'maiz', 'poroto'] as const;
 const STAGES = ['siembra', 'emergencia', 'vegetativo', 'floracion', 'llenado', 'madurez'] as const;
-const CROP_LABELS: Record<string, string> = { soja: 'Soja', maiz: 'Maíz', poroto: 'Poroto' };
-const STAGE_LABELS: Record<string, string> = {
-  siembra: 'Siembra', emergencia: 'Emergencia', vegetativo: 'Vegetativo',
-  floracion: 'Floración', llenado: 'Llenado', madurez: 'Madurez',
-};
 
 export default function NuevaParcela() {
   const navigate = useNavigate();
@@ -61,8 +57,8 @@ export default function NuevaParcela() {
       </header>
 
       <form className="flex flex-col gap-6 pb-10" onSubmit={handleSubmit}>
-        <Field label="Nombre de la parcela" error={fieldErrors['name']}>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Lote Norte"
+        <Field label="Nombre de la parcela" error={fieldErrors['name']} id="parcel-name">
+          <input id="parcel-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Lote Norte"
             className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
         </Field>
 
@@ -74,8 +70,8 @@ export default function NuevaParcela() {
           <ChipGroup options={STAGES as unknown as string[]} labels={STAGE_LABELS} value={stage} onChange={setStage} />
         </Field>
 
-        <Field label="Hectáreas" error={fieldErrors['hectares']}>
-          <input type="number" inputMode="decimal" value={hectares} onChange={(e) => setHectares(e.target.value)} placeholder="0"
+        <Field label="Hectáreas" error={fieldErrors['hectares']} id="parcel-hectares">
+          <input id="parcel-hectares" type="number" inputMode="decimal" value={hectares} onChange={(e) => setHectares(e.target.value)} placeholder="0"
             className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
         </Field>
 
@@ -133,13 +129,13 @@ export default function NuevaParcela() {
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({ label, error, children, id }: { label: string; error?: string; children: React.ReactNode; id?: string }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-base font-semibold text-foreground">{label}</span>
+    <div className="block">
+      <label htmlFor={id} className="mb-2 block text-base font-semibold text-foreground">{label}</label>
       {children}
       {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
-    </label>
+    </div>
   );
 }
 

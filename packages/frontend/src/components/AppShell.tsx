@@ -1,11 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { Sprout, Bell, Camera, Settings, WifiOff, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
+import { useAppStore } from "@/stores/app-store";
 
 type Props = {
   children: ReactNode;
-  offline?: boolean;
-  pendientes?: number;
   title?: string;
   headerRight?: ReactNode;
 };
@@ -17,24 +16,28 @@ const navItems = [
   { to: "/ajustes", label: "Ajustes", icon: Settings },
 ];
 
-export function AppShell({ children, offline = false, pendientes = 0, title, headerRight }: Props) {
+export function AppShell({ children, title, headerRight }: Props) {
   const { pathname } = useLocation();
+  const isOnline = useAppStore((s) => s.isOnline);
+  const pendingSyncCount = useAppStore((s) => s.pendingSyncCount);
+  const showBanner = !isOnline || pendingSyncCount > 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-[88px]">
-      {(offline || pendientes > 0) && (
+      <div className="max-w-md mx-auto">
+      {showBanner && (
         <div
           className={`sticky top-0 z-30 flex items-center gap-3 px-4 py-3 text-base font-medium border-b ${
-            offline
+            !isOnline
               ? "bg-warning/15 text-warning border-warning/40"
               : "bg-primary/10 text-primary border-primary/30"
           }`}
         >
-          {offline ? <WifiOff className="h-5 w-5 shrink-0" /> : <RefreshCw className="h-5 w-5 shrink-0" />}
+          {!isOnline ? <WifiOff className="h-5 w-5 shrink-0" /> : <RefreshCw className="h-5 w-5 shrink-0" />}
           <span className="min-w-0 truncate">
-            {offline
+            {!isOnline
               ? "Sin conexión · mostrando datos guardados"
-              : `${pendientes} ${pendientes === 1 ? "operación pendiente" : "operaciones pendientes"} de sincronizar`}
+              : `${pendingSyncCount} ${pendingSyncCount === 1 ? "operación pendiente" : "operaciones pendientes"} de sincronizar`}
           </span>
         </div>
       )}
@@ -47,9 +50,10 @@ export function AppShell({ children, offline = false, pendientes = 0, title, hea
       )}
 
       <main className="px-5">{children}</main>
+      </div>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-card">
-        <ul className="grid grid-cols-4">
+        <ul className="grid grid-cols-4 max-w-md mx-auto">
           {navItems.map((item) => {
             const active = item.exact
               ? pathname === item.to
