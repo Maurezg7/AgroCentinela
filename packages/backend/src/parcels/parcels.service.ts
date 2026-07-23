@@ -19,11 +19,11 @@ export class ParcelsService {
     @Inject(TABLE_NAME) private readonly tableName: string,
   ) {}
 
-  async create(dto: ParcelCreate): Promise<Parcel> {
+  async create(dto: ParcelCreate & { id?: string }): Promise<Parcel> {
     const now = new Date().toISOString();
     const parcel: Parcel = {
       ...dto,
-      id: randomUUID(),
+      id: dto.id ?? randomUUID(),
       createdAt: now,
       updatedAt: now,
       syncedAt: now,

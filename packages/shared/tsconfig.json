@@ -5,7 +5,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "declaration": true,
-    "outDir": "./dist",
+    "outDir": "./dist/cjs",
     "rootDir": "./src",
     "esModuleInterop": true,
     "skipLibCheck": true

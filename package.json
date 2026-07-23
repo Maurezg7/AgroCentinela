@@ -7,6 +7,9 @@
     "packages/frontend",
     "packages/backend"
   ],
+  "dependencies": {
+    "zod": "3.24.1"
+  },
   "engines": {
     "node": ">=18.0.0"
   }

@@ -2,14 +2,22 @@
   "name": "@agrocentinela/shared",
   "version": "0.1.0",
   "private": true,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc -p tsconfig.esm.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "3.23.8"
+    "zod": "3.24.1"
   },
   "devDependencies": {
     "typescript": "5.5.4"

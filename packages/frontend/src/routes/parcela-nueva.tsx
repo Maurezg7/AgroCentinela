@@ -1,144 +1,163 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { useGeolocation } from "@/hooks/use-geolocation";
+import { createParcel } from "@/services/parcels.service";
 
-type GpsState = "obtenida" | "buscando" | "denegado";
-
-const cultivos = ["Soja", "Maíz", "Poroto"] as const;
-const etapas = ["Siembra", "Emergencia", "Vegetativo", "Floración", "Llenado", "Madurez"] as const;
+const CROPS = ['soja', 'maiz', 'poroto'] as const;
+const STAGES = ['siembra', 'emergencia', 'vegetativo', 'floracion', 'llenado', 'madurez'] as const;
+const CROP_LABELS: Record<string, string> = { soja: 'Soja', maiz: 'Maíz', poroto: 'Poroto' };
+const STAGE_LABELS: Record<string, string> = {
+  siembra: 'Siembra', emergencia: 'Emergencia', vegetativo: 'Vegetativo',
+  floracion: 'Floración', llenado: 'Llenado', madurez: 'Madurez',
+};
 
 export default function NuevaParcela() {
-  const [gps, setGps] = useState<GpsState>("obtenida");
-  const [cultivo, setCultivo] = useState<string>("Soja");
-  const [etapa, setEtapa] = useState<string>("Vegetativo");
+  const navigate = useNavigate();
+  const geo = useGeolocation();
+
+  const [name, setName] = useState('');
+  const [crop, setCrop] = useState<string>('soja');
+  const [stage, setStage] = useState<string>('vegetativo');
+  const [hectares, setHectares] = useState('');
+  const [manualLat, setManualLat] = useState('');
+  const [manualLon, setManualLon] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setFieldErrors({});
+
+    const coordinates = geo.result
+      ? { lat: geo.result.lat, lon: geo.result.lon }
+      : { lat: parseFloat(manualLat), lon: parseFloat(manualLon) };
+
+    const result = await createParcel({
+      name,
+      crop,
+      stage,
+      hectares: parseFloat(hectares) || 0,
+      coordinates,
+    });
+
+    setSubmitting(false);
+    if (!result.success) {
+      setFieldErrors(result.fieldErrors);
+      return;
+    }
+    navigate('/');
+  };
 
   return (
     <AppShell>
       <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pt-6 pb-4">
-        <Link
-          to="/"
-          className="grid h-12 w-12 place-items-center rounded-xl bg-card border border-border"
-          aria-label="Volver"
-        >
+        <Link to="/" className="grid h-12 w-12 place-items-center rounded-xl bg-card border border-border" aria-label="Volver">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="truncate text-2xl font-bold">Nueva parcela</h1>
       </header>
 
-      <form className="flex flex-col gap-6 pb-10" onSubmit={(e) => e.preventDefault()}>
-        <Field label="Nombre de la parcela">
-          <input
-            type="text"
-            placeholder="Ej. Lote Norte"
-            className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+      <form className="flex flex-col gap-6 pb-10" onSubmit={handleSubmit}>
+        <Field label="Nombre de la parcela" error={fieldErrors['name']}>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Lote Norte"
+            className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
         </Field>
 
-        <Field label="Cultivo">
-          <ChipGroup options={cultivos as unknown as string[]} value={cultivo} onChange={setCultivo} />
+        <Field label="Cultivo" error={fieldErrors['crop']}>
+          <ChipGroup options={CROPS as unknown as string[]} labels={CROP_LABELS} value={crop} onChange={setCrop} />
         </Field>
 
-        <Field label="Etapa fenológica">
-          <ChipGroup options={etapas as unknown as string[]} value={etapa} onChange={setEtapa} />
+        <Field label="Etapa fenológica" error={fieldErrors['stage']}>
+          <ChipGroup options={STAGES as unknown as string[]} labels={STAGE_LABELS} value={stage} onChange={setStage} />
         </Field>
 
-        <Field label="Hectáreas">
-          <input
-            type="number"
-            inputMode="decimal"
-            placeholder="0"
-            className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+        <Field label="Hectáreas" error={fieldErrors['hectares']}>
+          <input type="number" inputMode="decimal" value={hectares} onChange={(e) => setHectares(e.target.value)} placeholder="0"
+            className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
         </Field>
 
-        <Field label="Ubicación">
-          <button
-            type="button"
-            onClick={() => setGps(gps === "obtenida" ? "buscando" : gps === "buscando" ? "denegado" : "obtenida")}
-            className="w-full inline-flex items-center justify-center gap-3 min-h-[64px] rounded-xl bg-primary text-primary-foreground text-lg font-semibold"
-          >
-            <MapPin className="h-6 w-6" /> Usar mi ubicación
+        <Field label="Ubicación" error={fieldErrors['coordinates'] || fieldErrors['coordinates.lat'] || fieldErrors['coordinates.lon']}>
+          <button type="button" onClick={geo.request} disabled={geo.status === 'requesting'}
+            className="w-full inline-flex items-center justify-center gap-3 min-h-[64px] rounded-xl bg-primary text-primary-foreground text-lg font-semibold disabled:opacity-60">
+            {geo.status === 'requesting' ? <Loader2 className="h-6 w-6 animate-spin" /> : <MapPin className="h-6 w-6" />}
+            {geo.status === 'requesting' ? 'Buscando señal GPS…' : 'Usar mi ubicación'}
           </button>
 
-          {gps === "obtenida" && (
+          {geo.status === 'success' && geo.result && (
             <div className="mt-3 flex items-start gap-3 rounded-xl border border-primary/40 bg-primary/10 p-4 text-primary">
               <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="font-semibold">Ubicación obtenida</p>
-                <p className="text-sm opacity-90">-24.7821, -65.4232 · precisión ±8 m</p>
+                <p className="text-sm opacity-90">{geo.result.lat.toFixed(4)}, {geo.result.lon.toFixed(4)} · precisión ±{Math.round(geo.result.accuracy)} m</p>
               </div>
             </div>
           )}
 
-          {gps === "buscando" && (
-            <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-muted-foreground">
-              <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
-              <p>Buscando señal GPS…</p>
-            </div>
-          )}
-
-          {gps === "denegado" && (
+          {(geo.status === 'denied' || geo.status === 'timeout') && (
             <div className="mt-3 rounded-xl border border-warning/40 bg-warning/10 p-4 text-warning">
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="font-semibold">Permiso de ubicación denegado</p>
+                  <p className="font-semibold">{geo.status === 'denied' ? 'Permiso de ubicación denegado' : 'No se obtuvo señal GPS'}</p>
                   <p className="text-sm opacity-90 mt-1">
-                    Ingresá las coordenadas manualmente o habilitá el permiso desde el navegador.
+                    {geo.status === 'denied'
+                      ? 'Necesitamos las coordenadas para mostrarte pronóstico y alertas precisas de tu parcela.'
+                      : 'Podés reintentar o ingresar las coordenadas manualmente.'}
                   </p>
                 </div>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <input placeholder="Latitud" className="min-h-[56px] rounded-xl border border-input bg-background px-3 text-foreground" />
-                <input placeholder="Longitud" className="min-h-[56px] rounded-xl border border-input bg-background px-3 text-foreground" />
+                <input placeholder="Latitud" value={manualLat} onChange={(e) => setManualLat(e.target.value)}
+                  className="min-h-[56px] rounded-xl border border-input bg-background px-3 text-foreground" />
+                <input placeholder="Longitud" value={manualLon} onChange={(e) => setManualLon(e.target.value)}
+                  className="min-h-[56px] rounded-xl border border-input bg-background px-3 text-foreground" />
               </div>
+              {geo.status === 'timeout' && (
+                <button type="button" onClick={geo.request} className="mt-3 w-full min-h-[48px] rounded-xl border border-primary text-primary font-semibold">
+                  Reintentar
+                </button>
+              )}
             </div>
           )}
         </Field>
 
-        <button type="submit" className="mt-2 w-full min-h-[64px] rounded-xl bg-primary text-primary-foreground text-lg font-bold">
-          Guardar parcela
+        <button type="submit" disabled={submitting}
+          className="mt-2 w-full min-h-[64px] rounded-xl bg-primary text-primary-foreground text-lg font-bold disabled:opacity-60">
+          {submitting ? 'Guardando…' : 'Guardar parcela'}
         </button>
       </form>
     </AppShell>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <label className="block">
       <span className="mb-2 block text-base font-semibold text-foreground">{label}</span>
       {children}
+      {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
     </label>
   );
 }
 
 function ChipGroup({
-  options,
-  value,
-  onChange,
+  options, labels, value, onChange,
 }: {
-  options: string[];
-  value: string;
-  onChange: (v: string) => void;
+  options: string[]; labels: Record<string, string>; value: string; onChange: (v: string) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
         const active = opt === value;
         return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onChange(opt)}
+          <button key={opt} type="button" onClick={() => onChange(opt)}
             className={`min-h-[56px] px-5 rounded-xl border text-base font-semibold ${
-              active
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card text-foreground border-border"
-            }`}
-          >
-            {opt}
+              active ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border"
+            }`}>
+            {labels[opt] ?? opt}
           </button>
         );
       })}

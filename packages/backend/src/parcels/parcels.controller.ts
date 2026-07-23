@@ -15,6 +15,11 @@ import { ParcelCreateSchema } from '@agrocentinela/shared';
 import { NotFoundError, ConflictError } from '../common/errors/app-error';
 import { z } from 'zod';
 
+// Extend ParcelCreateSchema to accept optional client-generated ID
+const CreateParcelBodySchema = ParcelCreateSchema.extend({
+  id: z.string().uuid().optional(),
+});
+
 const PatchParcelSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   stage: z.enum([
@@ -29,7 +34,7 @@ export class ParcelsController {
 
   @Post()
   async create(@Body() body: unknown) {
-    const result = ParcelCreateSchema.safeParse(body);
+    const result = CreateParcelBodySchema.safeParse(body);
     if (!result.success) {
       throw new BadRequestException(result.error.issues);
     }
