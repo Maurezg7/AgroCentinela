@@ -10,7 +10,7 @@ Parameters:
 
 Globals:
   Function:
-    Runtime: nodejs20.x
+    Runtime: nodejs22.x
     Timeout: 30
     MemorySize: 256
     Environment:
@@ -102,17 +102,92 @@ Resources:
       State: DISABLED
       Targets:
         - Id: ClimateSchedulerTarget
-          Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:agrocentinela-climate-scheduler-${Environment}
+          Arn: !GetAtt ApiFunction.Arn
           Input: '{}'
 
-  # Se habilita cuando exista la función (T-1.2).
-  # ClimateSchedulerInvokePermission:
-  #   Type: AWS::Lambda::Permission
-  #   Properties:
-  #     FunctionName: !Sub agrocentinela-climate-scheduler-${Environment}
-  #     Action: lambda:InvokeFunction
-  #     Principal: events.amazonaws.com
-  #     SourceArn: !GetAtt ClimateIngestaScheduleRule.Arn
+  # ─── Lambda API Function ─────────────────────────────────────────────
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub agrocentinela-api-${Environment}
+      Handler: lambda.handler
+      Runtime: nodejs22.x
+      MemorySize: 1024
+      Timeout: 30
+      CodeUri: ../packages/backend/.lambda
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref AgroCentinelaTable
+          AWS_REGION_OVERRIDE: !Ref AWS::Region
+          QUEUE_URL: !GetAtt ClimateIngestaQueue.QueueUrl
+          IMAGES_BUCKET: !Ref DiagnosisImagesBucket
+          NODE_ENV: production
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource:
+                - !GetAtt AgroCentinelaTable.Arn
+                - !Sub ${AgroCentinelaTable.Arn}/index/GSI1
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/agrocentinela/${Environment}/*
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !GetAtt ClimateIngestaQueue.Arn
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+              Resource: !Sub ${DiagnosisImagesBucket.Arn}/*
+      Events:
+        ApiCatchAll:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  # ─── HTTP API (API Gateway v2) with CORS ────────────────────────────
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PATCH
+          - DELETE
+          - OPTIONS
+
+  # ─── EventBridge Permission (now that ApiFunction exists) ───────────
+  ClimateSchedulerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ApiFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt ClimateIngestaScheduleRule.Arn
 
   # ─── SSM Parameters (placeholders para config) ─────────────────────
   ParamTableName:
@@ -137,6 +212,12 @@ Resources:
       Value: !Ref DiagnosisImagesBucket
 
 Outputs:
+  ApiUrl:
+    Description: HTTP API endpoint URL
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiUrl
+
   TableName:
     Description: DynamoDB table name
     Value: !Ref AgroCentinelaTable
