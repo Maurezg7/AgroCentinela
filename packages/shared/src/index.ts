@@ -69,3 +69,6 @@ export type {
   SyncDiagnosisUpload,
   SyncAlertDelivered,
 } from './schemas/sync-operation.schema';
+
+export { evaluateRules } from './rules/rule-engine';
+export type { RuleEngineInput } from './rules/rule-engine';

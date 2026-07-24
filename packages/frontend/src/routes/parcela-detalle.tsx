@@ -4,7 +4,8 @@ import { ArrowLeft, Clock, AlertTriangle, ShieldCheck, Loader2 } from "lucide-re
 import { AppShell } from "@/components/AppShell";
 import { AlertaCard } from "@/components/AlertaCard";
 import { useAlerts } from "@/hooks/use-alerts";
-import { getDB, getDeviceId } from "@/services/idb-store";
+import { useAiEngine } from "@/hooks/use-ai-engine";
+import { getDB } from "@/services/idb-store";
 import { apiClient } from "@/services/api-client";
 import { useAppStore } from "@/stores/app-store";
 import { cropLabel, stageLabel } from "@/lib/labels";
@@ -18,6 +19,7 @@ export default function ParcelaDetalle() {
   const [climateAge, setClimateAge] = useState<string>("");
   const [expired, setExpired] = useState(false);
   const { alerts, refresh: refreshAlerts } = useAlerts(id);
+  const { generateAlert } = useAiEngine();
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<string | null>(null);
 
@@ -59,22 +61,28 @@ export default function ParcelaDetalle() {
   }
 
   async function handleCheckRisk() {
-    if (!id) return;
+    if (!id || !parcel) return;
     setChecking(true);
     setCheckResult(null);
+
+    // Need climate data for local engines
+    if (!climate) {
+      setCheckResult('Necesitás al menos un pronóstico previo. Conectate para descargarlo.');
+      setChecking(false);
+      return;
+    }
+
     try {
-      const deviceId = await getDeviceId();
-      const result = await apiClient.generateAlert(id, deviceId);
-      if (result.generated) {
-        // Persist new alert to IDB
-        const db = await getDB();
-        await db.put('alerts', result.alert);
+      const result = await generateAlert(id, parcel.crop, parcel.stage, climate);
+      if (result.alert) {
         await refreshAlerts();
         setCheckResult(null);
-      } else if (result.reason === 'no_risk') {
-        setCheckResult('Sin riesgo detectado para esta parcela.');
       } else {
-        setCheckResult('Ya hay una alerta reciente para esta condición.');
+        setCheckResult(
+          result.reason === 'deduplicated'
+            ? 'Ya hay una alerta reciente para esta condición.'
+            : 'Sin riesgo detectado para esta parcela.',
+        );
       }
     } catch {
       setCheckResult('Error al analizar riesgo. Intentá de nuevo.');
@@ -140,16 +148,13 @@ export default function ParcelaDetalle() {
       <section className="pb-4">
         <button
           type="button"
-          disabled={checking || !isOnline}
+          disabled={checking}
           onClick={handleCheckRisk}
           className="w-full min-h-[56px] rounded-xl bg-primary text-primary-foreground font-semibold inline-flex items-center justify-center gap-3 disabled:opacity-60"
         >
           {checking ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
           {checking ? "Analizando riesgo…" : "Chequear riesgo"}
         </button>
-        {!isOnline && (
-          <p className="mt-2 text-xs text-muted-foreground text-center">Requiere conexión</p>
-        )}
         {checkResult && (
           <p className="mt-3 text-sm text-center text-muted-foreground bg-card rounded-xl border border-border p-3">{checkResult}</p>
         )}
