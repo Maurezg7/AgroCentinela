@@ -5,6 +5,7 @@ import { DYNAMO_CLIENT, TABLE_NAME } from '../dynamo/dynamo.constants';
 import { BedrockService } from './bedrock.service';
 import { ClimateService } from '../climate/climate.service';
 import { ParcelsService } from '../parcels/parcels.service';
+import { PushService } from '../push/push.service';
 import type { Alert, BedrockAlertResponse, ClimateCache } from '@agrocentinela/shared';
 
 const DEDUP_WINDOW_MS = 12 * 60 * 60 * 1000;
@@ -30,6 +31,7 @@ export class AlertsService {
     private readonly bedrockService: BedrockService,
     private readonly climateService: ClimateService,
     private readonly parcelsService: ParcelsService,
+    private readonly pushService: PushService,
   ) {}
 
   /** AP4: Alerts for a device, ordered by date desc (GSI1) */
@@ -144,6 +146,40 @@ export class AlertsService {
         },
       }),
     );
+
+    // Send push notification for severity >= 4
+    if (alert.severity >= 4) {
+      this.logger.log(JSON.stringify({
+        event: 'push_attempt',
+        alertId: alert.id,
+        deviceId,
+        severity: alert.severity,
+      }));
+      try {
+        const sent = await this.pushService.sendToDevice(deviceId, {
+          title: alert.condition === 'helada' ? '⚠️ Riesgo de helada' : '⚠️ Estrés hídrico',
+          body: alert.message,
+          parcelId: alert.parcelId,
+          severity: alert.severity,
+        });
+        if (sent) {
+          await this.pushService.markDelivered(parcelId, alert.createdAt);
+          this.logger.log(JSON.stringify({ event: 'push_delivered', alertId: alert.id, deviceId }));
+        } else {
+          this.logger.log(JSON.stringify({ event: 'push_no_subscriptions', alertId: alert.id, deviceId }));
+        }
+      } catch (err) {
+        this.logger.error(JSON.stringify({ event: 'push_error', alertId: alert.id, error: String(err) }));
+      }
+    } else {
+      this.logger.log(JSON.stringify({
+        event: 'push_skipped',
+        alertId: alert.id,
+        reason: 'severity_below_threshold',
+        severity: alert.severity,
+      }));
+    }
+
     return { generated: true, alert };
   }
 

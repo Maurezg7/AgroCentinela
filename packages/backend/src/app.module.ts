@@ -5,6 +5,7 @@ import { ParcelsModule } from './parcels/parcels.module';
 import { ClimateModule } from './climate/climate.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { SyncModule } from './sync/sync.module';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SyncModule } from './sync/sync.module';
     ClimateModule,
     AlertsModule,
     SyncModule,
+    PushModule,
   ],
 })
 export class AppModule {}
