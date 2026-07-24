@@ -7,6 +7,9 @@
     "packages/frontend",
     "packages/backend"
   ],
+  "scripts": {
+    "build:frontend": "npm run build -w @agrocentinela/shared && npm run build -w @agrocentinela/frontend"
+  },
   "dependencies": {
     "zod": "3.24.1"
   },
