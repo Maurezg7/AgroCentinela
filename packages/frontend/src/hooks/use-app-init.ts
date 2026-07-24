@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/stores/app-store';
 import { getDeviceId } from '@/services/idb-store';
-import { getPendingCount } from '@/services/sync-queue';
+import { getPendingCount, setupSyncListeners } from '@/services/sync-queue';
 
 export function useAppInit() {
   const { setDeviceId, setOnline, setPendingSyncCount } = useAppStore();
@@ -19,6 +19,9 @@ export function useAppInit() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // Setup sync flush listeners (online, visibilitychange)
+    const teardownSync = setupSyncListeners();
+
     // Poll sync count every 5s (for changes from SW)
     const interval = setInterval(() => {
       getPendingCount().then(setPendingSyncCount);
@@ -27,6 +30,7 @@ export function useAppInit() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      teardownSync();
       clearInterval(interval);
     };
   }, [setDeviceId, setOnline, setPendingSyncCount]);

@@ -12,6 +12,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
@@ -33,38 +36,10 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
-    },
-      workbox: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-      runtimeCaching: [
-        {
-          urlPattern: /\/api\/climate\/.*/i,
-          handler: 'StaleWhileRevalidate',
-          options: {
-            cacheName: 'climate-cache',
-            expiration: { maxEntries: 20, maxAgeSeconds: 86400 },
-          },
-        },
-        {
-          urlPattern: /\/api\/alerts\/.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'alerts-cache',
-            networkTimeoutSeconds: 5,
-            expiration: { maxEntries: 50 },
-          },
-        },
-        {
-          urlPattern: /\/api\/parcels\/.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'parcels-cache',
-            networkTimeoutSeconds: 5,
-            expiration: { maxEntries: 30 },
-          },
-        },
-      ],
-    },
+      },
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+      },
     }),
   ],
 });

@@ -27,24 +27,27 @@ export default function NuevaParcela() {
     setSubmitting(true);
     setFieldErrors({});
 
-    const coordinates = geo.result
-      ? { lat: geo.result.lat, lon: geo.result.lon }
-      : { lat: parseFloat(manualLat), lon: parseFloat(manualLon) };
+    try {
+      const coordinates = geo.result
+        ? { lat: geo.result.lat, lon: geo.result.lon }
+        : { lat: parseFloat(manualLat), lon: parseFloat(manualLon) };
 
-    const result = await createParcel({
-      name,
-      crop,
-      stage,
-      hectares: parseFloat(hectares) || 0,
-      coordinates,
-    });
+      const result = await createParcel({
+        name,
+        crop,
+        stage,
+        hectares: parseFloat(hectares) || 0,
+        coordinates,
+      });
 
-    setSubmitting(false);
-    if (!result.success) {
-      setFieldErrors(result.fieldErrors);
-      return;
+      if (!result.success) {
+        setFieldErrors(result.fieldErrors);
+        return;
+      }
+      navigate('/');
+    } finally {
+      setSubmitting(false);
     }
-    navigate('/');
   };
 
   return (

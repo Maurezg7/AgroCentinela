@@ -4,6 +4,7 @@ import { DynamoModule } from './dynamo/dynamo.module';
 import { ParcelsModule } from './parcels/parcels.module';
 import { ClimateModule } from './climate/climate.module';
 import { AlertsModule } from './alerts/alerts.module';
+import { SyncModule } from './sync/sync.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AlertsModule } from './alerts/alerts.module';
     ParcelsModule,
     ClimateModule,
     AlertsModule,
+    SyncModule,
   ],
 })
 export class AppModule {}
