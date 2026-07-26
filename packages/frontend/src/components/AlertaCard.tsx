@@ -18,11 +18,11 @@ const severityLabel: Record<number, string> = {
 };
 
 const severityColor: Record<number, string> = {
-  1: "bg-muted text-muted-foreground border-border",
-  2: "bg-primary/15 text-primary border-primary/30",
-  3: "bg-warning/15 text-warning border-warning/40",
-  4: "bg-warning/25 text-warning border-warning/60",
-  5: "bg-red-500/20 text-red-400 border-red-500/60",
+  1: "bg-frost/10 text-frost border-frost/25",
+  2: "bg-frost/15 text-frost border-frost/30",
+  3: "bg-warning/15 text-warning border-warning/30",
+  4: "bg-warning/25 text-warning border-warning/50",
+  5: "bg-danger/20 text-danger border-danger/50",
 };
 
 function formatDate(iso: string): string {
@@ -55,7 +55,7 @@ export function AlertaCard({ alerta }: { alerta: Alert }) {
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground/70">
           <EngineIcon className="h-4 w-4" /> {engineLabel[alerta.engine]}
         </span>
         <button

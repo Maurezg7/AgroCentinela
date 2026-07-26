@@ -150,7 +150,7 @@ export default function ParcelaDetalle() {
           type="button"
           disabled={checking}
           onClick={handleCheckRisk}
-          className="w-full min-h-[56px] rounded-xl bg-primary text-primary-foreground font-semibold inline-flex items-center justify-center gap-3 disabled:opacity-60"
+          className="w-full min-h-[56px] rounded-xl bg-primary text-primary-foreground font-semibold inline-flex items-center justify-center gap-3 disabled:opacity-60 shadow-glow"
         >
           {checking ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
           {checking ? "Analizando riesgo…" : "Chequear riesgo"}

@@ -86,7 +86,7 @@ export default function DiagnosticoPage() {
           {camera.status === 'denied' ? (
             <DeniedView onPickFile={() => fileInputRef.current?.click()} />
           ) : (
-            <>
+            <div className="mx-auto w-full max-w-sm">
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-border bg-black">
                 <video
                   ref={videoRef}
@@ -103,7 +103,7 @@ export default function DiagnosticoPage() {
                 className="mt-6 w-full min-h-[72px] rounded-2xl bg-primary text-primary-foreground text-lg font-bold inline-flex items-center justify-center gap-3">
                 <Camera className="h-6 w-6" /> Capturar foto
               </button>
-            </>
+            </div>
           )}
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
         </div>
@@ -117,7 +117,7 @@ export default function DiagnosticoPage() {
       )}
 
       {view === 'result' && triage && (
-        <div className="pb-8">
+        <div className="pb-8 mx-auto w-full max-w-sm">
           <div className="rounded-2xl border border-border bg-card p-5">
             <p className="text-sm font-semibold text-muted-foreground">Diagnóstico preliminar (triage local)</p>
             <div className="mt-4 grid grid-cols-2 gap-4">

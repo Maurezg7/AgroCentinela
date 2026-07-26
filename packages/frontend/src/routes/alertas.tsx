@@ -21,7 +21,7 @@ export default function AlertasPage() {
           </p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3 pb-8">
+        <ul className="flex flex-col gap-3 pb-8 md:grid md:grid-cols-2 md:gap-4">
           {alerts.map((a) => (
             <li key={a.id}>
               <AlertaCard alerta={a} />

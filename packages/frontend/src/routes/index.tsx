@@ -8,11 +8,11 @@ import { getDB } from "@/services/idb-store";
 import type { Alert } from "@agrocentinela/shared";
 
 const severityColor: Record<number, string> = {
-  1: "bg-muted text-muted-foreground border-border",
-  2: "bg-primary/15 text-primary border-primary/30",
-  3: "bg-warning/15 text-warning border-warning/40",
-  4: "bg-warning/25 text-warning border-warning/60",
-  5: "bg-red-500/20 text-red-400 border-red-500/60",
+  1: "bg-frost/10 text-frost border-frost/25",
+  2: "bg-frost/15 text-frost border-frost/30",
+  3: "bg-warning/15 text-warning border-warning/30",
+  4: "bg-warning/25 text-warning border-warning/50",
+  5: "bg-danger/20 text-danger border-danger/50",
 };
 
 const severityLabel: Record<number, string> = {
@@ -44,7 +44,7 @@ export default function ParcelasList() {
       title="Mis parcelas"
       headerRight={
         <Link to="/parcelas/nueva"
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 min-h-[56px] text-primary-foreground font-semibold shadow-lg shadow-primary/20">
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 min-h-[56px] text-primary-foreground font-semibold shadow-glow">
           <Plus className="h-5 w-5" /> Nueva
         </Link>
       }
@@ -54,7 +54,7 @@ export default function ParcelasList() {
       ) : parcels.length === 0 ? (
         <EmptyState />
       ) : (
-        <ul className="flex flex-col gap-3 pb-8">
+        <ul className="flex flex-col gap-3 pb-8 md:grid md:grid-cols-2 md:gap-4">
           {parcels.map((p) => {
             const topAlert = alertsByParcel[p.id] ?? null;
             return (
@@ -74,8 +74,8 @@ export default function ParcelasList() {
                     <div className={`mt-4 flex items-start gap-3 rounded-xl border p-3 ${severityColor[topAlert.severity]}`}>
                       <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
                       <div className="min-w-0">
-                        <p className="text-xs font-bold uppercase tracking-wide opacity-90">
-                          {severityLabel[topAlert.severity]} · {topAlert.condition}
+                        <p className="text-xs font-bold uppercase tracking-wide">
+                          {severityLabel[topAlert.severity]} · {topAlert.condition === 'helada' ? 'Helada' : 'Estrés hídrico'}
                         </p>
                         <p className="text-sm font-semibold mt-0.5">{topAlert.message}</p>
                       </div>
