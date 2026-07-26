@@ -8,7 +8,7 @@ Proyecto desarrollado para el **Hackathon IA Masivo Online AWS — Código Facil
 
 | | |
 |---|---|
-| 🌐 **App (PWA)** | https://develop.d14w39ea5qid1r.amplifyapp.com |
+| 🌐 **App (PWA)** | https://agrocentinela.netlify.app |
 | ⚙️ **API** | https://x0ggao7aqh.execute-api.us-east-1.amazonaws.com |
 | 📦 **Repositorio** | https://github.com/Maurezg7/AgroCentinela |
 
