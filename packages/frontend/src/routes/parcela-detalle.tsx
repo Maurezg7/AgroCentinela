@@ -65,9 +65,9 @@ export default function ParcelaDetalle() {
     setChecking(true);
     setCheckResult(null);
 
-    // Need climate data for local engines
-    if (!climate) {
-      setCheckResult('Necesitás al menos un pronóstico previo. Conectate para descargarlo.');
+    // Offline without cached climate: can't do anything locally
+    if (!isOnline && !climate) {
+      setCheckResult('Sin conexión y sin pronóstico cacheado. Conectate para descargarlo.');
       setChecking(false);
       return;
     }

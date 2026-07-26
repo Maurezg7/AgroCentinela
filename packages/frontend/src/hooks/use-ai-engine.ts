@@ -21,11 +21,11 @@ export function useAiEngine() {
     parcelId: string,
     crop: string,
     stage: string,
-    climate: ClimateCache,
+    climate: ClimateCache | null,
   ): Promise<AiEngineResult> => {
     const deviceId = await getDeviceId();
 
-    // Online → use backend (Bedrock)
+    // Online → use backend (Bedrock) — backend fetches climate internally
     if (isOnline) {
       try {
         const result = await apiClient.generateAlert(parcelId, deviceId);
@@ -40,7 +40,12 @@ export function useAiEngine() {
       }
     }
 
-    // Offline or backend failed → try on-device Prompt API
+    // Offline or backend failed — need climate for local engines
+    if (!climate) {
+      return { alert: null, engine: 'rules', reason: 'no_climate' };
+    }
+
+    // Try on-device Prompt API
     const availability = await checkOnDeviceAvailability();
     if (availability === 'available') {
       const response = await generateOnDevice(crop, stage, climate);
