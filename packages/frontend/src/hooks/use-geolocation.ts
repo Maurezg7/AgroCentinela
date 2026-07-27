@@ -45,12 +45,10 @@ export function useGeolocation(): UseGeolocationReturn {
         if (err.code === err.PERMISSION_DENIED) {
           setStatus('denied');
           setError('Permiso de ubicación denegado');
-        } else if (err.code === err.TIMEOUT) {
-          setStatus('timeout');
-          setError('No se pudo obtener la ubicación en 15 segundos');
         } else {
-          setStatus('error');
-          setError('Error al obtener la ubicación');
+          // TIMEOUT or POSITION_UNAVAILABLE — offer manual entry
+          setStatus('timeout');
+          setError('No se pudo obtener la ubicación. Ingresá las coordenadas manualmente.');
         }
       },
       { enableHighAccuracy: false, timeout: TIMEOUT_MS, maximumAge: 60000 },

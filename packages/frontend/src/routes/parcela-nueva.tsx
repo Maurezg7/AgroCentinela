@@ -30,7 +30,13 @@ export default function NuevaParcela() {
     try {
       const coordinates = geo.result
         ? { lat: geo.result.lat, lon: geo.result.lon }
-        : { lat: parseFloat(manualLat), lon: parseFloat(manualLon) };
+        : { lat: parseFloat(manualLat) || 0, lon: parseFloat(manualLon) || 0 };
+
+      // Validate coordinates are set
+      if (!geo.result && (!manualLat || !manualLon)) {
+        setFieldErrors({ 'coordinates.lat': 'Ingresá la ubicación o usá el GPS.' });
+        return;
+      }
 
       const result = await createParcel({
         name,
