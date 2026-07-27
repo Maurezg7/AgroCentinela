@@ -53,7 +53,7 @@ export function useGeolocation(): UseGeolocationReturn {
           setError('Error al obtener la ubicación');
         }
       },
-      { enableHighAccuracy: true, timeout: TIMEOUT_MS, maximumAge: 0 },
+      { enableHighAccuracy: false, timeout: TIMEOUT_MS, maximumAge: 60000 },
     );
   }, []);
 
