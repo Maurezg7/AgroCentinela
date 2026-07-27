@@ -35,7 +35,7 @@ export default function Ajustes() {
     error: 'Error al suscribir',
   };
 
-  const showAction = pushStatus === 'unsubscribed' || pushStatus === 'error';
+  const showAction = pushStatus === 'unsubscribed' || pushStatus === 'error' || pushStatus === 'unavailable';
 
   return (
     <AppShell title="Ajustes">

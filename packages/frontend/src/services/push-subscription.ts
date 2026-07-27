@@ -35,12 +35,12 @@ export async function checkPushStatus(): Promise<PushStatus> {
   }
   if (Notification.permission === 'denied') return 'denied';
 
-  // Timeout: if SW isn't ready in 3s (e.g. dev mode), treat as unavailable
+  // Timeout: if SW isn't ready in 3s (e.g. first load), still allow subscription
   const reg = await Promise.race([
     navigator.serviceWorker.ready,
     new Promise<null>((r) => setTimeout(() => r(null), 3000)),
   ]);
-  if (!reg) return 'unavailable';
+  if (!reg) return 'unsubscribed'; // SW not ready yet but push is supported
 
   const sub = await reg.pushManager.getSubscription();
   if (sub) return 'subscribed';
