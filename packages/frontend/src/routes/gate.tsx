@@ -12,10 +12,25 @@ export default function Gate() {
     async function check() {
       try {
         const db = await getDB();
+
+        // Check if user has visited before (mark in config store)
+        const visited = await db.get('config', 'hasVisited');
+        if (visited) {
+          // Returning user: always show app (even with 0 parcels)
+          setState('app');
+          return;
+        }
+
+        // First ever visit: check if there are parcels
         const count = await db.count('parcels');
-        setState(count > 0 ? 'app' : 'landing');
+        if (count > 0) {
+          setState('app');
+        } else {
+          // Mark as visited so next time we don't redirect again
+          await db.put('config', { key: 'hasVisited', value: 'true' });
+          setState('landing');
+        }
       } catch {
-        // IDB failed — show app (safe default for returning users)
         setState('app');
       }
     }
@@ -25,10 +40,7 @@ export default function Gate() {
   if (state === 'loading') {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
-          <p className="text-sm text-muted-foreground">Cargando…</p>
-        </div>
+        <div className="h-10 w-10 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
       </div>
     );
   }

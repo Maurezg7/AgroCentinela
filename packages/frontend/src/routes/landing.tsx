@@ -78,14 +78,14 @@ function Hero() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              to="/"
+              to="/parcelas/nueva"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-ember px-6 py-3.5 text-base font-semibold text-primary-foreground shadow-glow transition hover:brightness-110 active:scale-[0.98]"
             >
               Registrar mi parcela
               <ArrowRight className="size-4" />
             </Link>
             <Link
-              to="/"
+              to="/alertas"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card/60 px-6 py-3.5 text-base font-medium text-foreground/90 backdrop-blur transition hover:border-frost/50 hover:text-frost"
             >
               Ver mis alertas
@@ -194,7 +194,7 @@ function FinalCta() {
           Registrá tu primera parcela en menos de un minuto y probá el motor de riesgo.
         </p>
         <Link
-          to="/"
+          to="/parcelas/nueva"
           className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-ember px-7 py-4 text-base font-semibold text-primary-foreground shadow-glow transition hover:brightness-110 active:scale-[0.98]"
         >
           Registrar mi parcela
