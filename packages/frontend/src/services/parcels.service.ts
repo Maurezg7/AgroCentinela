@@ -30,6 +30,16 @@ export async function createParcel(
 
   const payload = result.data;
 
+  // Check for duplicate name in local DB
+  const db = await getDB();
+  const existing = await db.getAll('parcels');
+  const duplicate = existing.find(
+    (p) => p.name.toLowerCase() === payload.name.toLowerCase(),
+  );
+  if (duplicate) {
+    return { success: false, fieldErrors: { name: 'Ya existe una parcela con ese nombre.' } };
+  }
+
   // Client generates canonical ID (Property 5: idempotency)
   const id = uuidv4();
   const now = new Date().toISOString();
@@ -41,7 +51,6 @@ export async function createParcel(
     syncedAt: null,
   };
 
-  const db = await getDB();
   await db.put('parcels', localParcel);
 
   // Try to sync to backend (send ID so backend uses it)

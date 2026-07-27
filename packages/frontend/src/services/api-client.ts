@@ -67,9 +67,13 @@ export const apiClient = {
   },
 
   generateAlert(parcelId: string, deviceId: string): Promise<GenerateAlertResult> {
+    const payload: Record<string, unknown> = { parcelId, deviceId };
+    if (import.meta.env.VITE_DEMO_MODE === 'true') {
+      payload.simulate = { temperatureMin: -2 };
+    }
     return request<GenerateAlertResult>('/alerts/generate', {
       method: 'POST',
-      body: JSON.stringify({ parcelId, deviceId }),
+      body: JSON.stringify(payload),
     });
   },
 };

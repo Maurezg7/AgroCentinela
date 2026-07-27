@@ -35,7 +35,8 @@ export function useAiEngine() {
           return { alert: result.alert, engine: result.alert.engine as AlertEngine };
         }
         return { alert: null, engine: 'bedrock', reason: result.reason };
-      } catch {
+      } catch (err) {
+        console.error('[useAiEngine] Backend failed, falling back to local:', err);
         // Fall through to on-device
       }
     }

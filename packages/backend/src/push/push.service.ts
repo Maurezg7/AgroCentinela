@@ -25,14 +25,24 @@ export class PushService {
 
   private async getVapidKeys() {
     if (this.vapidKeys) return this.vapidKeys;
-    const [pub, priv] = await Promise.all([
-      this.ssm.send(new GetParameterCommand({ Name: '/agrocentinela/vapid/public-key' })),
-      this.ssm.send(new GetParameterCommand({ Name: '/agrocentinela/vapid/private-key', WithDecryption: true })),
-    ]);
-    this.vapidKeys = {
-      publicKey: pub.Parameter?.Value ?? '',
-      privateKey: priv.Parameter?.Value ?? '',
-    };
+
+    // Prefer env vars (local dev) over SSM
+    if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+      this.vapidKeys = {
+        publicKey: process.env.VAPID_PUBLIC_KEY,
+        privateKey: process.env.VAPID_PRIVATE_KEY,
+      };
+    } else {
+      const [pub, priv] = await Promise.all([
+        this.ssm.send(new GetParameterCommand({ Name: '/agrocentinela/vapid/public-key' })),
+        this.ssm.send(new GetParameterCommand({ Name: '/agrocentinela/vapid/private-key', WithDecryption: true })),
+      ]);
+      this.vapidKeys = {
+        publicKey: pub.Parameter?.Value ?? '',
+        privateKey: priv.Parameter?.Value ?? '',
+      };
+    }
+
     webpush.setVapidDetails(
       'mailto:admin@agrocentinela.app',
       this.vapidKeys.publicKey,

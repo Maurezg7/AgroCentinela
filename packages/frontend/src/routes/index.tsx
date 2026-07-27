@@ -72,10 +72,15 @@ export default function ParcelasList() {
                   className="block rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 active:scale-[0.98]">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                     <div className="min-w-0">
-                      <h2 className="truncate text-xl font-bold">{p.name}</h2>
-                      <p className="mt-1 text-base text-muted-foreground">
-                        {cropLabel(p.crop)} · {stageLabel(p.stage)} · {p.hectares} ha
-                      </p>
+                      <h2 className="truncate text-lg font-bold">{p.name}</h2>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        <span className="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold">
+                          {cropLabel(p.crop)}
+                        </span>
+                        <span>{stageLabel(p.stage)}</span>
+                        <span>·</span>
+                        <span>{p.hectares} ha</span>
+                      </div>
                     </div>
                     <ChevronRight className="h-6 w-6 shrink-0 text-muted-foreground mt-1" />
                   </div>

@@ -21,7 +21,7 @@ export default function ParcelaDetalle() {
   const { alerts, refresh: refreshAlerts } = useAlerts(id);
   const { generateAlert } = useAiEngine();
   const [checking, setChecking] = useState(false);
-  const [checkResult, setCheckResult] = useState<string | null>(null);
+  const [checkResult, setCheckResult] = useState<{ type: 'safe' | 'info' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -67,7 +67,7 @@ export default function ParcelaDetalle() {
 
     // Offline without cached climate: can't do anything locally
     if (!isOnline && !climate) {
-      setCheckResult('Sin conexión y sin pronóstico cacheado. Conectate para descargarlo.');
+      setCheckResult({ type: 'error', message: 'Sin conexión y sin pronóstico cacheado. Conectate para descargarlo.' });
       setChecking(false);
       return;
     }
@@ -77,15 +77,31 @@ export default function ParcelaDetalle() {
       if (result.alert) {
         await refreshAlerts();
         setCheckResult(null);
+      } else if (result.reason === 'deduplicated') {
+        setCheckResult({ type: 'info', message: 'Ya hay una alerta reciente para esta condición. No se generó una nueva.' });
+      } else if (result.reason === 'no_climate') {
+        setCheckResult({ type: 'error', message: 'Sin datos de clima. Tocá de nuevo para reintentar.' });
       } else {
-        setCheckResult(
-          result.reason === 'deduplicated'
-            ? 'Ya hay una alerta reciente para esta condición.'
-            : 'Sin riesgo detectado para esta parcela.',
-        );
+        // No risk — show green "safe" card with explanation
+        const minTemp = climate ? Math.min(...climate.hourly48h.map(h => h.temperature2m)).toFixed(1) : '?';
+        setCheckResult({
+          type: 'safe',
+          message: `Sin riesgo detectado. La temperatura mínima prevista es ${minTemp}°C (por encima del umbral de helada de 3°C) y no hay indicadores de estrés hídrico.`,
+        });
+      }
+
+      // Refresh climate data after check (backend may have ingested fresh data)
+      if (isOnline) {
+        try {
+          const fresh = await apiClient.getClimate(id);
+          setClimate(fresh);
+          updateAge(fresh);
+          const db = await getDB();
+          await db.put('climate', fresh);
+        } catch { /* keep existing */ }
       }
     } catch {
-      setCheckResult('Error al analizar riesgo. Intentá de nuevo.');
+      setCheckResult({ type: 'error', message: 'Error al analizar riesgo. Intentá de nuevo.' });
     } finally {
       setChecking(false);
     }
@@ -160,7 +176,16 @@ export default function ParcelaDetalle() {
           {checking ? "Analizando riesgo…" : "Chequear riesgo"}
         </button>
         {checkResult && (
-          <p className="mt-3 text-sm text-center text-muted-foreground bg-card rounded-xl border border-border p-3">{checkResult}</p>
+          <div className={`mt-3 flex items-start gap-3 rounded-xl border p-4 text-sm ${
+            checkResult.type === 'safe'
+              ? 'bg-safe/10 text-safe border-safe/30'
+              : checkResult.type === 'error'
+              ? 'bg-danger/10 text-danger border-danger/30'
+              : 'bg-card text-muted-foreground border-border'
+          }`}>
+            <span className="text-lg">{checkResult.type === 'safe' ? '✅' : checkResult.type === 'error' ? '⚠️' : 'ℹ️'}</span>
+            <p className="font-medium">{checkResult.message}</p>
+          </div>
         )}
       </section>
 

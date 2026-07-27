@@ -35,7 +35,13 @@ export async function checkPushStatus(): Promise<PushStatus> {
   }
   if (Notification.permission === 'denied') return 'denied';
 
-  const reg = await navigator.serviceWorker.ready;
+  // Timeout: if SW isn't ready in 3s (e.g. dev mode), treat as unavailable
+  const reg = await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<null>((r) => setTimeout(() => r(null), 3000)),
+  ]);
+  if (!reg) return 'unavailable';
+
   const sub = await reg.pushManager.getSubscription();
   if (sub) return 'subscribed';
   if (Notification.permission === 'granted') return 'unsubscribed';
@@ -62,8 +68,13 @@ export async function subscribeToPush(): Promise<PushStatus> {
     return 'denied';
   }
 
-  // Get SW registration and subscribe
-  const reg = await navigator.serviceWorker.ready;
+  // Get SW registration and subscribe (timeout for dev mode)
+  const reg = await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<null>((r) => setTimeout(() => r(null), 3000)),
+  ]);
+  if (!reg) throw new Error('Service Worker no disponible. Probá con el build (npx vite build && npx vite preview).');
+
   const publicKey = await getVapidPublicKey();
 
   const subscription = await reg.pushManager.subscribe({
