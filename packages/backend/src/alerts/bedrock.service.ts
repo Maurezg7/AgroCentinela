@@ -12,6 +12,13 @@ export class BedrockService {
 
   private async getModelId(): Promise<string> {
     if (this.modelId) return this.modelId;
+
+    // Prefer env var (local dev) over SSM
+    if (process.env.BEDROCK_MODEL_ID) {
+      this.modelId = process.env.BEDROCK_MODEL_ID;
+      return this.modelId;
+    }
+
     const res = await this.ssm.send(
       new GetParameterCommand({ Name: '/agrocentinela/dev/bedrock-model-text' }),
     );
