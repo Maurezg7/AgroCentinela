@@ -24,7 +24,6 @@ Resources:
   AgroCentinelaTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub AgroCentinela-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: PK
@@ -57,7 +56,6 @@ Resources:
   ClimateIngestaQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub agrocentinela-climate-ingesta-${Environment}
       VisibilityTimeout: 60
       MessageRetentionPeriod: 86400
       RedrivePolicy:
@@ -67,14 +65,12 @@ Resources:
   ClimateIngestaDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub agrocentinela-climate-ingesta-dlq-${Environment}
       MessageRetentionPeriod: 1209600
 
   # ─── S3 Bucket para imágenes de diagnóstico ─────────────────────────
   DiagnosisImagesBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub agrocentinela-diagnosis-images-${Environment}-${AWS::AccountId}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -96,7 +92,6 @@ Resources:
   ClimateIngestaScheduleRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: !Sub agrocentinela-climate-daily-${Environment}
       Description: Dispara ingesta climática diaria (06:00 UTC = 03:00 ART)
       ScheduleExpression: cron(0 6 * * ? *)
       State: DISABLED
@@ -215,7 +210,7 @@ Resources:
 Outputs:
   ApiUrl:
     Description: HTTP API endpoint URL
-    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
     Export:
       Name: !Sub ${AWS::StackName}-ApiUrl
 
