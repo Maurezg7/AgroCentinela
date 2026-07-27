@@ -45,8 +45,9 @@ export function AppShell({ children, title, headerRight }: Props) {
 
       <div className="w-full max-w-3xl mx-auto px-5">
         {title && (
-          <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pt-6 pb-4">
-            <h1 className="truncate text-2xl font-bold tracking-tight">{title}</h1>
+          <header className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 pt-6 pb-4">
+            <img src="/logo.svg" className="h-8 w-8" alt="AgroCentinela" />
+            <h1 className="truncate text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
             {headerRight}
           </header>
         )}

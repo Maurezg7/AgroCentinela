@@ -44,13 +44,22 @@ export default function ParcelasList() {
       title="Mis parcelas"
       headerRight={
         <Link to="/parcelas/nueva"
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 min-h-[56px] text-primary-foreground font-semibold shadow-glow">
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-ember px-4 min-h-[56px] text-primary-foreground font-semibold shadow-glow transition hover:brightness-110 active:scale-[0.98]">
           <Plus className="h-5 w-5" /> Nueva
         </Link>
       }
     >
+      <p className="text-muted-foreground text-sm md:text-base -mt-2 mb-4">Todas tus parcelas en un lugar. Tocá una para ver su pronóstico y alertas, o agregá una nueva con el botón de arriba.</p>
       {loading ? (
-        <p className="text-muted-foreground text-center py-16">Cargando…</p>
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="rounded-2xl border border-border bg-card p-5 animate-pulse">
+              <div className="h-5 w-2/3 rounded bg-muted" />
+              <div className="mt-3 h-4 w-1/2 rounded bg-muted" />
+              <div className="mt-4 h-12 w-full rounded-xl bg-muted" />
+            </div>
+          ))}
+        </div>
       ) : parcels.length === 0 ? (
         <EmptyState />
       ) : (
@@ -60,7 +69,7 @@ export default function ParcelasList() {
             return (
               <li key={p.id}>
                 <Link to={`/parcelas/${p.id}`}
-                  className="block rounded-2xl border border-border bg-card p-5 active:scale-[0.99] transition">
+                  className="block rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 active:scale-[0.98]">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                     <div className="min-w-0">
                       <h2 className="truncate text-xl font-bold">{p.name}</h2>

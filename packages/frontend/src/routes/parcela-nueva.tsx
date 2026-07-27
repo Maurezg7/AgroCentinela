@@ -52,17 +52,21 @@ export default function NuevaParcela() {
 
   return (
     <AppShell>
-      <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pt-6 pb-4">
+      <header className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 pt-6 pb-2">
         <Link to="/" className="grid h-12 w-12 place-items-center rounded-xl bg-card border border-border" aria-label="Volver">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="truncate text-2xl font-bold">Nueva parcela</h1>
+        <img src="/logo.svg" className="h-8 w-8" alt="AgroCentinela" />
+        <h1 className="truncate text-2xl md:text-3xl font-bold">Nueva parcela</h1>
       </header>
+      <p className="text-muted-foreground text-sm md:text-base mb-5">
+        Cargá los datos básicos. Usá el GPS del celular para capturar la ubicación con precisión.
+      </p>
 
-      <form className="flex flex-col gap-6 pb-10" onSubmit={handleSubmit}>
+      <form className="space-y-5 rounded-2xl border border-border bg-card p-5 sm:p-6 mb-10" onSubmit={handleSubmit}>
         <Field label="Nombre de la parcela" error={fieldErrors['name']} id="parcel-name">
           <input id="parcel-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Lote Norte"
-            className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base outline-none transition placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/30" />
         </Field>
 
         <Field label="Cultivo" error={fieldErrors['crop']}>
@@ -75,12 +79,12 @@ export default function NuevaParcela() {
 
         <Field label="Hectáreas" error={fieldErrors['hectares']} id="parcel-hectares">
           <input id="parcel-hectares" type="number" inputMode="decimal" value={hectares} onChange={(e) => setHectares(e.target.value)} placeholder="0"
-            className="w-full min-h-[56px] rounded-xl border border-input bg-card px-4 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base outline-none transition placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/30" />
         </Field>
 
         <Field label="Ubicación" error={fieldErrors['coordinates'] || fieldErrors['coordinates.lat'] || fieldErrors['coordinates.lon']}>
           <button type="button" onClick={geo.request} disabled={geo.status === 'requesting'}
-            className="w-full inline-flex items-center justify-center gap-3 min-h-[64px] rounded-xl bg-primary text-primary-foreground text-lg font-semibold disabled:opacity-60">
+            className="w-full inline-flex items-center justify-center gap-3 min-h-[64px] rounded-xl border border-frost/40 bg-frost/10 text-frost text-lg font-semibold transition hover:bg-frost/20 disabled:opacity-60">
             {geo.status === 'requesting' ? <Loader2 className="h-6 w-6 animate-spin" /> : <MapPin className="h-6 w-6" />}
             {geo.status === 'requesting' ? 'Buscando señal GPS…' : 'Usar mi ubicación'}
           </button>
@@ -110,9 +114,9 @@ export default function NuevaParcela() {
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <input placeholder="Latitud" value={manualLat} onChange={(e) => setManualLat(e.target.value)}
-                  className="min-h-[56px] rounded-xl border border-input bg-background px-3 text-foreground" />
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base outline-none transition placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/30" />
                 <input placeholder="Longitud" value={manualLon} onChange={(e) => setManualLon(e.target.value)}
-                  className="min-h-[56px] rounded-xl border border-input bg-background px-3 text-foreground" />
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base outline-none transition placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/30" />
               </div>
               {geo.status === 'timeout' && (
                 <button type="button" onClick={geo.request} className="mt-3 w-full min-h-[48px] rounded-xl border border-primary text-primary font-semibold">
@@ -124,7 +128,7 @@ export default function NuevaParcela() {
         </Field>
 
         <button type="submit" disabled={submitting}
-          className="mt-2 w-full min-h-[64px] rounded-xl bg-primary text-primary-foreground text-lg font-bold disabled:opacity-60">
+          className="mt-2 w-full min-h-[64px] rounded-xl bg-gradient-ember text-primary-foreground text-lg font-bold shadow-glow transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60">
           {submitting ? 'Guardando…' : 'Guardar parcela'}
         </button>
       </form>

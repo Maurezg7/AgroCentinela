@@ -39,6 +39,7 @@ export default function Ajustes() {
 
   return (
     <AppShell title="Ajustes">
+      <p className="text-muted-foreground text-sm md:text-base -mt-2 mb-4">Gestioná permisos y sincronización. La app funciona aunque estés sin conexión.</p>
       <section className="pb-8">
         <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">Permisos</h2>
         <ul className="flex flex-col gap-2">

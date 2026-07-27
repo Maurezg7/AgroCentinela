@@ -95,12 +95,13 @@ export default function ParcelaDetalle() {
 
   return (
     <AppShell>
-      <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 pt-6 pb-4">
+      <header className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-3 pt-6 pb-4">
         <Link to="/" className="grid h-12 w-12 place-items-center rounded-xl bg-card border border-border" aria-label="Volver">
           <ArrowLeft className="h-5 w-5" />
         </Link>
+        <img src="/logo.svg" className="h-8 w-8" alt="AgroCentinela" />
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-bold">{parcel.name}</h1>
+          <h1 className="truncate text-2xl md:text-3xl font-bold">{parcel.name}</h1>
           <p className="truncate text-sm text-muted-foreground">
             {cropLabel(parcel.crop)} · {stageLabel(parcel.stage)} · {parcel.hectares} ha
           </p>
@@ -108,7 +109,7 @@ export default function ParcelaDetalle() {
       </header>
 
       <section className="pb-6">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-1 flex items-center justify-between">
           <h2 className="text-lg font-bold">Pronóstico 7 días</h2>
           {climate && (
             <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
@@ -119,6 +120,9 @@ export default function ParcelaDetalle() {
             </span>
           )}
         </div>
+        <p className="text-muted-foreground text-sm md:text-base mb-3">
+          Consultá el pronóstico y la lectura de la IA para cada una de tus parcelas. Sin señal estable, los datos se cachean localmente.
+        </p>
 
         {expired && (
           <div className="mb-3 flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3 text-warning text-sm">
@@ -150,7 +154,7 @@ export default function ParcelaDetalle() {
           type="button"
           disabled={checking}
           onClick={handleCheckRisk}
-          className="w-full min-h-[56px] rounded-xl bg-primary text-primary-foreground font-semibold inline-flex items-center justify-center gap-3 disabled:opacity-60 shadow-glow"
+          className="w-full min-h-[56px] rounded-xl bg-gradient-ember text-primary-foreground font-semibold inline-flex items-center justify-center gap-3 disabled:opacity-60 shadow-glow transition hover:brightness-110 active:scale-[0.98]"
         >
           {checking ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
           {checking ? "Analizando riesgo…" : "Chequear riesgo"}

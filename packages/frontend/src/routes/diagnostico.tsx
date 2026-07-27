@@ -81,6 +81,7 @@ export default function DiagnosticoPage() {
 
   return (
     <AppShell title="Diagnóstico">
+      <p className="text-muted-foreground text-sm md:text-base -mt-2 mb-4">Sacá una foto de una hoja afectada. El análisis preliminar se hace en tu teléfono, sin conexión.</p>
       {view === 'camera' && (
         <div className="pb-8">
           {camera.status === 'denied' ? (
@@ -100,7 +101,7 @@ export default function DiagnosticoPage() {
                 </div>
               </div>
               <button type="button" onClick={handleCapture}
-                className="mt-6 w-full min-h-[72px] rounded-2xl bg-primary text-primary-foreground text-lg font-bold inline-flex items-center justify-center gap-3">
+                className="mt-6 w-full min-h-[72px] rounded-2xl bg-gradient-ember text-primary-foreground text-lg font-bold inline-flex items-center justify-center gap-3 shadow-glow transition hover:brightness-110 active:scale-[0.98]">
                 <Camera className="h-6 w-6" /> Capturar foto
               </button>
             </div>

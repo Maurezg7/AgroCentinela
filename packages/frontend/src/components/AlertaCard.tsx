@@ -25,6 +25,14 @@ const severityColor: Record<number, string> = {
   5: "bg-danger/20 text-danger border-danger/50",
 };
 
+const severityBadge: Record<number, string> = {
+  1: "bg-frost text-frost-foreground",
+  2: "bg-frost text-frost-foreground",
+  3: "bg-warning text-warning-foreground",
+  4: "bg-warning text-warning-foreground",
+  5: "bg-destructive text-destructive-foreground",
+};
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
@@ -38,11 +46,11 @@ function formatDate(iso: string): string {
 export function AlertaCard({ alerta }: { alerta: Alert }) {
   const EngineIcon = engineIcon[alerta.engine];
   return (
-    <article className={`rounded-2xl border p-4 ${severityColor[alerta.severity] ?? severityColor[3]}`}>
+    <article className={`rounded-2xl border p-4 transition hover:border-primary/40 ${severityColor[alerta.severity] ?? severityColor[3]}`}>
       <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full bg-background/40 px-3 py-1 text-xs font-bold uppercase tracking-wide">
+        <span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg ${severityBadge[alerta.severity] ?? severityBadge[3]}`}>
           <AlertTriangle className="h-3.5 w-3.5" />
-          Severidad {alerta.severity} · {severityLabel[alerta.severity]}
+          {severityLabel[alerta.severity]}
         </span>
         <span className="text-xs font-medium opacity-80">{formatDate(alerta.createdAt)}</span>
       </div>
