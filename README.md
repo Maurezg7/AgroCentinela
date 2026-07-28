@@ -205,7 +205,7 @@ cd infra
 |------------|-----|
 | **Mauro Leonel Gómez** | Arquitectura, IA, frontend, infraestructura y deploy |
 | **Esteban Nahuel Ardaya** | Diseño UI/UX |
-| **Leonel Tomás Ezequiel Morales** | Backend |
+| **Leonel Tomás Ezequiel Morales** | Backend (versión inicial) · [repo campo-alerta](https://github.com/leitolml1/campo-alerta) · sistema de diseño |
 
 ---
 

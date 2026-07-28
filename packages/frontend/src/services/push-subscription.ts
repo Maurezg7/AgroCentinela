@@ -35,7 +35,7 @@ export async function checkPushStatus(): Promise<PushStatus> {
   }
   if (Notification.permission === 'denied') return 'denied';
 
-  // Timeout: if SW isn't ready in 3s (e.g. first load), still allow subscription
+// Timeout: if SW isn't ready in 3s (e.g. first load), still allow subscription
   const reg = await Promise.race([
     navigator.serviceWorker.ready,
     new Promise<null>((r) => setTimeout(() => r(null), 3000)),
